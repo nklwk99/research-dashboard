@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精选研报总结</title>
+<style>
+/* ========== CSS变量 & 全局 ========== */
+:root {
+  --primary: #1B2A4A;
+  --accent: #C0392B;
+  --section: #2C3E50;
+  --body-text: #2C2C2C;
+  --meta: #7F8C8D;
+  --light-bg: #F4F6F9;
+  --key-bg: #FFF3E0;
+  --key-border: #E67E22;
+  --summary-bg: #EBF5FB;
+  --summary-border: #2980B9;
+  --divider: #BDC3C7;
+  --card-shadow: 0 2px 12px rgba(27,42,74,0.08);
+  --sidebar-width: 260px;
+  --header-height: 60px;
+  --radius: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  background: var(--light-bg);
+  color: var(--body-text);
+  line-height: 1.6;
+}
+
+/* ========== 顶部导航 ========== */
+.header {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  height: var(--header-height);
+  background: linear-gradient(135deg, var(--primary) 0%, #2C3E50 100%);
+  color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.header-title {
+  font-size: 20px; font-weight: 700; letter-spacing: 1px;
+}
+.header-title span { color: var(--accent); }
+.header-stats {
+  display: flex; gap: 20px; font-size: 13px; opacity: 0.9;
+}
+.header-stats .stat { display: flex; align-items: center; gap: 4px; }
+.header-stats .num { font-weight: 700; font-size: 16px; color: #F39C12; }
+
+/* ========== 左侧边栏 ========== */
+.sidebar {
+  position: fixed; top: var(--header-height); left: 0;
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--header-height));
+  background: #fff;
+  border-right: 1px solid #e8e8e8;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.sidebar-title {
+  font-size: 13px; font-weight: 700; color: var(--meta);
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 0 20px 10px; border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+}
+.date-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  font-size: 14px;
+}
+.date-item:hover { background: var(--light-bg); }
+.date-item.active {
+  background: var(--summary-bg);
+  border-left-color: var(--summary-border);
+  font-weight: 600;
+  color: var(--summary-border);
+}
+.date-item .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--divider);
+  flex-shrink: 0;
+}
+.date-item.active .dot { background: var(--summary-border); }
+.date-item .count {
+  margin-left: auto;
+  background: var(--light-bg);
+  color: var(--meta);
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 10px;
+}
+.date-item.active .count {
+  background: var(--summary-border);
+  color: #fff;
+}
+
+/* ========== 主内容区 ========== */
+.main {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
+  padding: 24px 32px 40px;
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* 搜索栏 */
+.search-bar {
+  position: relative;
+  margin-bottom: 24px;
+}
+.search-bar input {
+  width: 100%; max-width: 480px;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #ddd;
+  border-radius: 24px;
+  font-size: 14px;
+  background: #fff;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.search-bar input:focus { border-color: var(--summary-border); }
+.search-bar .icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--meta); font-size: 16px;
+}
+
+/* 日期标题 */
+.date-header {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary);
+}
+.date-header h2 {
+  font-size: 22px; color: var(--primary);
+}
+.date-header .scan-info {
+  font-size: 13px; color: var(--meta);
+}
+
+/* ========== 研报卡片 ========== */
+.report-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.report-card:hover {
+  box-shadow: 0 4px 20px rgba(27,42,74,0.12);
+}
+
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px;
+}
+.card-header h3 {
+  font-size: 17px; font-weight: 700; color: var(--primary);
+  line-height: 1.5;
+  flex: 1;
+}
+.card-header .badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-cn {
+  background: #E8F5E9; color: #2E7D32;
+}
+.badge-en {
+  background: var(--summary-bg); color: var(--summary-border);
+}
+.badge-other {
+  background: #FFF3E0; color: #E65100;
+}
+
+.card-meta {
+  padding: 8px 24px;
+  font-size: 12px; color: var(--meta);
+  background: #fafafa;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.card-meta span { display: flex; align-items: center; gap: 4px; }
+
+.card-body {
+  padding: 20px 24px;
+}
+
+/* 核心内容框 */
+.summary-box {
+  background: var(--summary-bg);
+  border: 1px solid var(--summary-border);
+  border-left: 4px solid var(--summary-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.summary-box .label {
+  font-size: 14px; font-weight: 700;
+  color: var(--summary-border);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.summary-box .label::before {
+  content: "";
+  display: inline-block; width: 4px; height: 16px;
+  background: var(--summary-border); border-radius: 2px;
+}
+.summary-box .text {
+  font-size: 14px; line-height: 1.8; color: var(--body-text);
+}
+
+/* 核心要点框 */
+.points-box {
+  background: var(--key-bg);
+  border: 1px solid var(--key-border);
+  border-left: 4px solid var(--key-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+}
+.points-box .label {
+  font-size: 14px; font-weight: 700;
+  color: var(--key-border);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.points-box .label::before {
+  content: "";
+  display: inline-block; width: 4px; height: 16px;
+  background: var(--key-border); border-radius: 2px;
+}
+.point-item {
+  display: flex; gap: 10px; margin-bottom: 10px;
+  font-size: 14px; line-height: 1.7;
+}
+.point-item:last-child { margin-bottom: 0; }
+.point-num {
+  flex-shrink: 0;
+  background: var(--accent);
+  color: #fff; font-weight: 700;
+  font-size: 11px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 3px;
+}
+
+/* 英文原文框 */
+.original-box {
+  background: #f5f5f5;
+  border: 1px solid #999;
+  border-left: 4px solid #999;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin-top: 20px;
+}
+.original-box .label {
+  font-size: 14px; font-weight: 700;
+  color: #666; margin-bottom: 8px;
+}
+.original-box .text {
+  font-size: 13px; line-height: 1.7; color: #555;
+  font-style: italic;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  text-align: center; padding: 80px 20px;
+  color: var(--meta);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--section); }
+.empty-state p { font-size: 14px; }
+
+/* ========== 全部日期视图 ========== */
+.all-dates-view .date-section {
+  margin-bottom: 40px;
+}
+.all-dates-view .date-section-title {
+  font-size: 18px; font-weight: 700; color: var(--primary);
+  padding-bottom: 8px; margin-bottom: 16px;
+  border-bottom: 2px solid var(--primary);
+  display: flex; align-items: center; gap: 10px;
+}
+.all-dates-view .date-section-title .date-count {
+  font-size: 12px; font-weight: 600;
+  background: var(--primary); color: #fff;
+  padding: 2px 8px; border-radius: 10px;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .header-stats { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div class="header">
+  <div class="header-title">精选<span>研报</span>总结</div>
+  <div class="header-stats">
+    <div class="stat"><span class="num">5</span> 次扫描</div>
+    <div class="stat"><span class="num">8</span> 份研报</div>
+    <div class="stat"><span class="num">1</span> 天记录</div>
+  </div>
+</div>
+
+<!-- 左侧日期导航 -->
+<div class="sidebar">
+  <div class="sidebar-title">📅 扫描日期</div>
+  <div class="date-item active" data-date="all" onclick="filterByDate('all')">
+    <span class="dot"></span>全部记录
+    <span class="count">8</span>
+  </div>
+  <div class="date-item" data-date="2026-05-27" onclick="filterByDate('2026-05-27')">
+    <span class="dot"></span>2026-05-27
+    <span class="count">8</span>
+  </div>
+</div>
+
+<!-- 主内容区 -->
+<div class="main" id="mainContent">
+  <div class="search-bar">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索研报标题、内容或要点..." oninput="handleSearch(this.value)">
+  </div>
+  <div id="contentArea"></div>
+</div>
+
+<script>
+// 历史数据
+const HISTORY = {
+  "scans": [
+    {
+      "scan_time": "2026-05-27T15:10:00.000000",
+      "scan_sequence": 1,
+      "monitor_dir": "D://桌面文件//精选报告总结",
+      "output_dir": "D://桌面文件//精选报告总结输出",
+      "total_files": 1,
+      "summaries": [
+        {
+          "filename": "20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "filepath": "D://桌面文件//精选报告总结//20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "8.6MB / 47页",
+          "summary": "我国富煤贫油少气的能源禀赋决定了发展现代煤化工的战略必要性。报告指出原油对外依存度73.36%、天然气41.04%，油气安全风险突出，现代煤化工可替代部分石油化工，降低进口依赖。四大驱动因素共振：政策层面国家十四五规划明确煤制油气战略基地布局，新疆2021-2026年政府工作报告均提及加快煤化工项目建设；油价层面美伊冲突推布伦特原油至92.69美元/桶，远超煤制油55-65美元/桶盈亏平衡点，煤化工盈利窗口全面打开；需求层面新能源汽车带动聚烯烃需求、光伏带动EVA树脂需求、禁塑令带动可降解材料需求，国产替代空间巨大；碳约束层面2025年六部门下调煤化工能耗标杆水平，新增产能严格管控，落后产能加速出清，市场份额向龙头集中。国内现状方面，我国煤化工技术与规模全球领先：2024年煤制烯烃产能1342万吨/年、产量1289万吨（占国内烯烃27%），煤制乙二醇产能1143万吨/年、产量646万吨（占34%）；DMTO-III技术甲醇单耗降至2.65吨/吨烯烃（全球领先）；2019-2024年关键指标全面优化，煤制油煤耗降24%、水耗降25%。新疆作为核心增量极，煤炭预测资源量2.19万亿吨（占全国40%+），准东5000卡动力煤仅120元/吨（vs秦皇岛750元/吨），煤制烯烃完全成本5779元/吨（利润率33.3%）、煤制气2.65元/m³（利润率26-30%）、煤制油5407元/吨（利润率21.4%），经济性全面验证，拟建及在建项目总投资超5000亿元。产业化方面，2024-2025年环评集中通过8个重大项目，其中国能准东20亿m³/年煤制气项目从核准到环评通过仅4个月，环评通过后项目工程量完成10-20%，2026年进入设备采购密集期、2027年全面建成投产。相关公司分析涵盖6家龙头企业：宝丰能源（煤制烯烃龙头，ROE 24.84%、毛利率35.92%）、三维化学（硫磺回收市占率第一，2024H2-2025H1新增订单约50个）、航天工程（气化炉市占率>50%，累计签约167台套）、中石化炼化工程（新型煤化工营收+308.8%，未完工订单2038.50亿元）、中国化学（化工建设国家队，承担90%以上煤化工设计施工）、东华科技（乙二醇技术市占率>70%，合计转让产能超1000万吨/年）。",
+          "key_points": [
+            "战略定位：原油依存度73.36%+天然气41.04%，煤炭进口依存度仅3.38%，现代煤化工是保障能源安全的关键战略补充",
+            "油价催化：美伊冲突推布伦特原油至92.69美元/桶，煤制油盈亏平衡55-65美元/桶、煤制烯烃约50美元/桶，当前油价下煤化工盈利窗口全面打开",
+            "新疆成本洼地：准东5000卡动力煤120元/吨（vs东部750元/吨），煤制烯烃完全成本5779元/吨（利润率33.3%），煤制气运至上海2.65元/m³（利润率26.0%），煤制油完全成本5407元/吨（利润率21.4%）",
+            "技术全球领先：DMTO-III技术甲醇单耗2.65吨/吨烯烃（全球最低），气化炉单炉投煤量达4000吨/日，2024年煤制烯烃产量占国内27%、煤制乙二醇占34%",
+            "供给端去内卷：2025年六部门下调煤化工能耗标杆水平，十五五新增产能严格受限，近40%固定床落后产能加速出清，市场份额向技术/规模/低碳优势龙头集中",
+            "审批加速：2024-2025年环评集中通过8个重大项目，国能准东煤制气项目从核准到环评通过仅4个月，环评通过后EPC总承包密集招标，2026-2027年为设备采购和投产高峰",
+            "产业链受益顺序：第一阶段工程设计/EPC先行（中国化学、三维化学、东华科技）→第二阶段核心设备（航天工程气化炉、压力容器、泵阀）→第三阶段项目运营（宝丰能源等业主方）",
+            "碳约束转型路径：2021-2035年保障能源安全与降碳基础→2035-2045年保持规模稳定与低碳替代→2046-2060年深度脱碳与碳中和，煤化工碳排放强度煤制烯烃9.0吨CO₂/吨产品",
+            "重点公司：宝丰能源ROE 24.84%、三维化学新增订单约50个（煤制气为主）、航天工程气化炉市占率>50%、中石化炼化工程新型煤化工营收+308.8%、中国化学海外新签1245亿元、东华科技乙二醇技术市占率>70%",
+            "风险因素：油价回落至盈亏平衡点以下、碳税政策超预期收紧、煤制乙二醇供过于求（产能3027.5万吨vs需求2786万吨）、煤制气管网配套进度不及预期、项目审批不确定性"
+          ],
+          "original_summary": ""
+        }
+      ]
+    },
+    {
+      "scan_time": "2026-05-27T15:16:00.000000",
+      "scan_sequence": 2,
+      "monitor_dir": "D://桌面文件//精选报告总结",
+      "output_dir": "D://桌面文件//精选报告总结输出",
+      "total_files": 1,
+      "summaries": [
+        {
+          "filename": "20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "filepath": "D://桌面文件//精选报告总结//20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "8.6MB / 47页",
+          "summary": "我国\"富煤、贫油、少气\"的基本国情决定了发展现代煤化工的战略必然性。原油对外依存度73.36%（进口集中于俄/沙/伊/巴四国合计50.7%），天然气41.04%，煤炭仅3.38%，化工用煤占比8%远低于化工用油24%。行业以煤气化/液化为核心，涵盖煤制油/气/烯烃/乙二醇等，是传统煤化工升级版。四大驱动共振：政策密集催化（国家+新疆双层面）、美伊冲突推油价至92.69美元/桶（远超煤制油55-65美元、煤制烯烃50美元盈亏平衡点）、需求升级+国产替代（新能源/EVA/可降解材料）、碳约束倒逼\"去内卷\"（新增严控+落后出清）。国内技术全球领先，2024年煤制烯烃产量1289万吨（占27%）、煤制乙二醇646万吨（占34%），DMTO-III甲醇单耗2.65吨/吨烯烃。新疆为核心增量极，煤价120元/吨（vs东部750元/吨），煤制烯烃利润率33.3%、煤制气26%、煤制油21.4%，规划投资超5000亿。2024-2025年环评集中通过8个项目，2026-2027为设备采购和投产窗口。6家龙头公司：宝丰能源ROE 24.84%、三维化学订单约50个、航天工程气化炉市占率>50%、中石化炼化工程煤化工营收+308.8%、中国化学承担90%化工设计施工、东华科技乙二醇技术市占率>70%。",
+          "key_points": [
+            "战略定位：原油依存度73.36%+天然气41.04%，煤炭仅3.38%，现代煤化工是保障能源安全的关键补充",
+            "油价催化：布伦特92.69美元/桶，远超煤制油55-65美元/桶、煤制烯烃50美元/桶盈亏平衡点",
+            "新疆成本洼地：准东煤价120元/吨，煤制烯烃利润率33.3%、煤制气26%、煤制油21.4%，投资超5000亿",
+            "技术领先：DMTO-III甲醇单耗2.65吨/吨烯烃（全球最低），煤制烯烃占国内27%、乙二醇占34%",
+            "碳约束去内卷：能耗标杆下调，新增产能受限，40%固定床落后产能加速出清",
+            "审批加速：2024-2025年环评集中通过8个项目，EPC密集招标期到来",
+            "受益顺序：EPC先行（中国化学/三维化学/东华科技）→设备（航天工程）→运营（宝丰能源）",
+            "转型路径：2021-2035保安全→2035-2045稳定→2046-2060碳中和",
+            "重点公司：宝丰ROE 24.84%、航天工程市占率>50%、中石化炼化煤化工+308.8%",
+            "风险：油价回落、碳税收紧、乙二醇过剩、管网瓶颈"
+          ],
+          "original_summary": ""
+        }
+      ]
+    },
+    {
+      "scan_time": "2026-05-27T15:33:52.402145",
+      "scan_sequence": 3,
+      "monitor_dir": "D://桌面文件//精选报告总结",
+      "output_dir": "D://桌面文件//精选报告总结输出",
+      "total_files": 1,
+      "summaries": [
+        {
+          "filename": "20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "filepath": "D://桌面文件//精选报告总结//20260323-慧博智能投研-煤化工行业深度：驱动因素、国内现状、产业链及相关公司深度梳理.pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "8.6MB / 47页",
+          "summary": "我国\"富煤、贫油、少气\"的能源禀赋构成现代煤化工发展的底层逻辑。原油对外依存度73.36%（进口集中于俄/沙/伊/巴四国合计50.7%），天然气41.04%，煤炭仅3.38%，化工用煤占比8%远低于化工用油24%。美伊冲突推布伦特原油至92.69美元/桶，远超煤制油55-65美元/桶、煤制烯烃约50美元/桶盈亏平衡点，煤化工盈利窗口全面打开。我国煤化工技术装备全球领先：DMTO-III甲醇单耗降至2.65吨/吨烯烃（全球最低），2024年煤制烯烃产量1289万吨（占27%）、煤制乙二醇646万吨（占34%）。新疆煤炭预测资源量2.19万亿吨（占全国40%+），准东5000卡动力煤仅120元/吨（vs秦皇岛750元/吨），成为核心增量极，拟建及在建项目总投资超5000亿元。碳约束政策推动行业\"去内卷\"：2025年六部门下调能耗标杆，十五五新增产能严格受限，近40%固定床落后产能加速出清。2024-2025年环评集中通过8个重大项目，2026-2027年为设备采购和投产高峰。",
+          "key_points": [
+            "能源安全底层逻辑：原油依存度73.36%+天然气41.04%，煤炭仅3.38%，现代煤化工是降低油气进口依赖的战略必选项",
+            "油价催化：布伦特原油92.69美元/桶，远超煤制油55-65美元/桶、煤制烯烃50美元/桶盈亏平衡点",
+            "新疆成本洼地：准东煤价120元/吨（vs东部750元/吨），煤制烯烃利润率33.3%、煤制气26%、煤制油21.4%",
+            "技术全球领先：DMTO-III甲醇单耗2.65吨/吨烯烃（全球最低），煤制烯烃占国内27%、乙二醇占34%",
+            "碳约束去内卷：能耗标杆下调，十五五新增产能受限，40%固定床落后产能加速出清",
+            "审批加速：2024-2025年环评集中通过8个项目，EPC密集招标，2026-2027年为设备采购和投产高峰",
+            "产业链受益顺序：EPC先行（中国化学/三维化学/东华科技）→核心设备（航天工程）→项目运营（宝丰能源）",
+            "碳中和路径：2021-2035保安全→2035-2045稳定→2046-2060碳中和",
+            "重点公司：宝丰能源ROE 24.84%、三维化学新增订单约50个、航天工程气化炉市占率>50%、中石化炼化工程煤化工营收+308.8%、中国化学海外新签1245亿元、东华科技乙二醇技术市占率>70%",
+            "风险：油价回落、碳税收紧、乙二醇过剩、管网瓶颈、审批不确定性"
+          ],
+          "original_summary": ""
+        }
+      ]
+    },
+    {
+      "scan_time": "2026-05-27T15:49:17",
+      "scan_sequence": 1,
+      "monitor_dir": "D://桌面文件//精选报告总结",
+      "output_dir": "D://桌面文件//精选报告总结输出",
+      "total_files": 4,
+      "summaries": [
+        {
+          "filename": "20260415-西部证券-私募基金专题研究报告（二）：CTA策略，细分策略、适配行情和配置价值.pdf",
+          "filepath": "D://桌面文件//精选报告总结//20260415-西部证券-私募基金专题研究报告（二）：CTA策略，细分策略、适配行情和配置价值.pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "15.5 MB",
+          "summary": "本报告为西部证券私募基金专题研究系列的第二篇，聚焦CTA（商品交易顾问）策略。报告系统梳理了CTA策略的细分类型（包括趋势跟踪、套利、基本面量化等子策略），深入分析各细分策略在不同市场行情（趋势市、震荡市、波动率变化等）下的适应性表现。同时，报告从资产配置角度探讨了CTA策略与传统股债资产的低相关性优势，评估其在组合中的分散化配置价值。报告以数据驱动方式展示了CTA策略在极端市场环境下的危机Alpha特性。",
+          "key_points": [
+            "CTA策略与传统资产的低相关性使其具备显著的组合配置价值",
+            "趋势跟踪策略在强趋势行情中表现优异，但在震荡市中面临回撤压力",
+            "套利策略和基本面量化策略为CTA提供多元化收益来源",
+            "CTA策略在极端市场环境下展现危机Alpha特征，可作为组合风险对冲工具",
+            "不同CTA子策略在不同市场环境下的收益特征差异显著，需根据行情适配选择",
+            "报告为投资者构建CTA策略配置提供了系统的分析框架和量化参考",
+            "CTA策略的加入可有效提升投资组合的夏普比率和风险调整后收益"
+          ],
+          "original_summary": ""
+        },
+        {
+          "filename": "中英双语——达里奥最新文章：我们正处于一场短期内不会结束的世界大战.pdf",
+          "filepath": "D://桌面文件//精选报告总结//中英双语——达里奥最新文章：我们正处于一场短期内不会结束的世界大战.pdf",
+          "is_english": true,
+          "original_language": "English/中文双语",
+          "size": "2.5 MB",
+          "summary": "桥水基金创始人雷·达里奥（Ray Dalio）于2026年4月7日发表的深度分析文章，系统论证当前全球已进入一场世界大战的早期阶段，且短期内不会结束。文章指出，当前爆发的多场交火战争（俄乌战争、以巴冲突、也门-苏丹战争以及美以伊对抗）并非孤立事件，而是构成了一场相互关联的经典世界大战格局，与历史上的世界大战具有相同的动态特征。达里奥绘制了清晰的全球阵营图谱：中国-俄罗斯-伊朗-朝鲜-古巴为一方，美国-乌克兰-欧洲-以色列-海湾国家-日本-澳大利亚为另一方。他特别分析了霍尔木兹海峡的战略意义、中国在能源安全上的优势地位（消耗伊朗80-90%石油出口、拥有90-120天石油储备），以及美国作为能源出口国的相对优势。同时指出非交火战争（贸易、经济、资本、技术和地缘政治影响力较量）同样激烈。文章结论认为，中国和俄罗斯是这场战争在经济和地缘政治上的相对胜利者。",
+          "key_points": [
+            "当前全球已进入世界大战早期阶段，多场交火战争相互关联构成经典世界大战动态",
+            "全球阵营清晰：中俄伊朝古 vs 美欧乌以日澳等，可通过联合国投票、条约等客观指标验证",
+            "霍尔木兹海峡控制权是核心博弈焦点，决定全球能源格局走向",
+            "中国在能源安全上具备多重优势：消耗伊朗80-90%石油、与俄罗斯的能源保障关系、90-120天石油储备",
+            "美国处于能源出口国有利位置，相对受益于油价走高",
+            "除军事冲突外，贸易战、经济战、资本战、技术战和地缘政治影响力战同样构成世界大战的重要组成部分",
+            "中国和俄罗斯被视为相对的经济和地缘政治赢家",
+            "市场普遍定价战争短期结束的预期可能是错误的，投资者需要有更长远的战略视角",
+            "达里奥建议读者参考其著作《应对变化世界秩序的原则》第六章以获得更全面的历史周期分析",
+            "大多数人的短期关注视角导致忽视了更大、更长远的演变趋势"
+          ],
+          "original_summary": "Bridgewater founder Ray Dalio, in this April 7, 2026 essay, systematically argues that the world has entered the early stages of a world war that will not end anytime soon. Multiple interconnected conflicts (Russia-Ukraine, Israel-Gaza, Yemen-Sudan, US-Israel-Iran) form a classic world war dynamic. Dalio maps clear global alignments: China-Russia-Iran-North Korea-Cuba on one side, US-Ukraine-Europe-Israel-GCC-Japan-Australia on the other. He analyzes the strategic significance of the Strait of Hormuz, China's energy security advantages, and the relative positions of major powers. Non-shooting wars (trade, economic, capital, technology, geopolitical influence) are equally significant. He concludes that China and Russia appear to be relative economic and geopolitical winners from this war."
+        },
+        {
+          "filename": "洪灝：美联储巨鹰沃什将如何影响市场-2026.04.22(1).pdf",
+          "filepath": "D://桌面文件//精选报告总结//洪灝：美联储巨鹰沃什将如何影响市场-2026.04.22(1).pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "346 KB",
+          "summary": "知名策略分析师洪灝于2026年4月22日发布的深度分析，聚焦凯文·沃什（Kevin Warsh）被提名为美联储主席对全球金融市场的影响。沃什在参议院听证会上展现的经济哲学核心是：美联储必须各安其位，回归物价稳定与充分就业的传统使命，反对美联储涉足财政或社会政策。他提出一套联动操作策略：通过大幅主动缩表（每缩减1万亿美元相当于加息50个基点）为降息创造空间，同时主张美联储从MBS市场彻底退出（当前持有约1.9万亿美元），仅保留国债。洪灝详细梳理了历史上多次缩表对市场的冲击（2008年金融危机、2010年闪电崩盘、2011年市场暴跌、2018年Q4纳指暴跌25%、2022年股债双熊、2025年解放日崩盘），并指出沃什提名次日贵金属市场出现14-15个标准差的极端暴跌（黄金单日跌近12%、白银崩跌超30%），充分反映市场对大规模缩表的深度恐惧。文章还分析了沃什确认面临的政治障碍（司法部对鲍威尔的刑事调查）、美联储可能出现的领导真空，以及沃什理念在理论和实践之间的巨大鸿沟。",
+          "key_points": [
+            "沃什经济哲学核心：美联储应回归物价稳定与充分就业的传统使命，反对职能扩张",
+            "沃什师从弗里德曼、舒尔茨、赖斯和德鲁肯米勒，具有深厚的自由市场理论根基",
+            "提出资产负债表联动降息策略：每缩表1万亿美元≈降息50个基点",
+            "主张美联储应从MBS市场彻底退出（当前持有约1.9万亿美元），仅持有国债",
+            "沃什提名次日贵金属巨震：黄金单日跌近12%（100σ事件）、白银崩跌超30%（14-15σ事件）",
+            "历史教训：2008年、2010年、2011年、2018年、2022年、2025年——每次缩表/停止QE均引发市场剧烈动荡",
+            "当前处于QE5之中，市场流动性表现尚好，美股技术指标预示可能还有新高",
+            "沃什确认面临政治障碍：司法部调查鲍威尔，参议员Tillis威胁阻止所有提名",
+            "若5月15日鲍威尔任期届满时沃什未确认，美联储将面临领导真空",
+            "结论：沃什缩表理念理论上正确，但实际操作将面临前所未见的挑战；在当前战争阴影和油价飙升背景下，无论谁任主席都难以大幅调整货币政策"
+          ],
+          "original_summary": ""
+        },
+        {
+          "filename": "解码A股、港股主流红利指数-华泰.pdf",
+          "filepath": "D://桌面文件//精选报告总结//解码A股、港股主流红利指数-华泰.pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "1.2 MB",
+          "summary": "华泰证券策略研究团队于2026年4月14日发布的深度研究报告，系统梳理A股与港股市场主流红利指数的差异化定位。报告指出，在利率中枢下移与权益市场波动加剧的背景下，红利策略凭借稳定现金流回报与防御属性已成为重要资金布局方向。截至2026年4月12日，A股红利类ETF共53只、总规模1687.42亿元，港股红利类ETF共29只、总规模633.01亿元。报告将红利指数分为基础红利与红利+多因子两大类，从编制方案、市值风格、行业分布、风险收益特征及挂钩产品生态等维度进行全面对比分析。重点发现：港股红利指数股息率（6-7%）普遍高于A股（4-5%），但行业集中度也更高；A股国证自由现金流指数凭借独特的编制逻辑，历史年化收益与夏普比率表现最为突出；中证红利指数跟踪产品数量最多（35只），但红利低波挂钩ETF规模最大（413.3亿元）。报告对投资者构建精细化红利资产配置图谱提供了系统性的分析框架。",
+          "key_points": [
+            "市场规模：A股红利ETF共53只（1687亿元）、港股红利ETF共29只（633亿元），红利策略已成为重要资产配置方向",
+            "指数分类：基础红利（纯股息率加权选股）vs 红利+多因子（叠加质量、低波、价值、现金流、ESG等因子）",
+            "编制差异：港股红利指数门槛更严、因子更纯，多采用即期净股息率选股加权；A股准入相对宽松，加权方式更多元",
+            "市值风格：红利指数普遍呈大盘价值特征，但编制规则差异导致市值暴露显著分化",
+            "行业分布：银行与能源构成A股红利指数基石，部分指数因剔除金融地产而差异显著；港股金融+能源+电讯占比超八成",
+            "估值水平：截至2026.4.6，多数红利指数PE-TTM已处于75%分位数以上，PB-LF相对合理，估值安全边际收窄",
+            "股息率对比：港股股息率6-7% vs A股4-5%，港股绝对水平更高但波动率差异不大",
+            "业绩最优：A股国证自由现金流指数历史年化收益17.6%、夏普比率0.7，表现最突出；港股通中国央企红利风险调整后收益最优",
+            "产品生态：中证红利跟踪产品最多（35只），红利低波ETF规模最大（413.3亿元），费率优势集中在易方达、博时、广发等管理人",
+            "风险提示：历史经验可能失效，报告不涉及投资建议；选基应关注跟踪误差和综合费率而非单纯历史业绩"
+          ],
+          "original_summary": ""
+        }
+      ]
+    },
+    {
+      "scan_time": "2026-05-27T16:27:32.012501",
+      "scan_sequence": 1,
+      "monitor_dir": "D:\\桌面文件\\精选报告总结",
+      "output_dir": "D:\\桌面文件\\精选报告总结输出",
+      "total_files": 1,
+      "summaries": [
+        {
+          "filename": "资产配置手册（一）：全球资产100年(1).pdf",
+          "filepath": "D:\\桌面文件\\精选报告总结\\资产配置手册（一）：全球资产100年(1).pdf",
+          "is_english": false,
+          "original_language": "中文",
+          "size": "3.05 MB（47页）",
+          "summary": "本研报是中金公司大类资产配置研究团队推出的《资产配置手册》系列首篇，由分析师李昭等人撰写，发布于2026年5月7日。报告基于一个覆盖16个国家、20种资产、跨越100年的全球资产价格数据库（整合JST宏观数据库、David Jacks商品历史价格数据库、Wind、Bloomberg等十余个数据源），系统性分析了全球股票、债券、地产、商品与黄金五大类资产的长期风险收益特征。报告的核心目的并非简单描述历史，而是通过百年跨国大样本数据挑战市场上五种流行的资产认知误区——\"地产是过时资产\"\"美股永远例外\"\"债券绝对安全\"\"商品处于超级周期\"\"黄金无息所以没价值或应该永远上涨\"。全文通过严密的定量分析，逐一破除这些认知误区，最终得出核心结论：不存在可被长期信仰的单一资产，获取长期回报的关键在于构建能够适应不同宏观情境的多资产配置组合，以权益承载增长、以债券平滑波动、以地产和商品及黄金对冲宏观与地缘风险，并根据市场形势动态调整配置权重。",
+          "key_points": [
+            "报告构建了覆盖16国、20种资产、跨越100年的全球资产价格数据库，整合JST宏观数据库、David Jacks商品数据库、Wind、Bloomberg等十余个数据源，系统性分析了全球五大类资产的长期风险收益特征，旨在挑战五种流行市场认知误区。",
+            "地产并非过时资产：16国百年数据显示地产年化名义回报10.4%，高于股票8.6%和债券5.6%。经波动率低估校正和交易成本扣除后，地产收益波动比0.38仍接近股票0.40。日本反例证明：即使在90%城镇化率和25%以上老龄化背景下，地产滚动10年年化回报仍回升至7%-10%，人口结构并非地产回报的决定性因素（R²仅0.04）。",
+            "美股并非永远\"例外\"：过去150年美股名义年化9.0%仅排第7位，名义收益波动比排第3，实际回报排第2。日本股票在1951-1990年代四个十年连续跑赢美股，沪深300全收益在2004-2023年累计表现不弱于标普500。美股优势是跨长周期的平均结果，不代表在任何十年维度都占优。",
+            "债券并非绝对安全：16国中14国曾出现年度负回报超过-10%，极端宏观环境下债券平均实际回报在-10%到-20%之间。美国国债滚动5年夏普近年已进入负值区间，\"高夏普\"依赖于过去利率下行和通胀温和的特定宏观环境，未来未必可复制。",
+            "商品不只\"超级周期\"：1994年以来CRB指数年化收益仅2.65%，标普高盛1.92%，均低于3%通胀线；百年商品现货实际价格滚动十年年化长期围绕零值波动。商品缺乏内生复利机制，核心价值在于对冲和分散风险，而非长期持有分享增长红利。",
+            "黄金既不宜矮化也不宜神化：1975年以来伦敦金年化回报接近9%，与股票相当，但回报分布极不均匀——集中于1970年代和21世纪初以来的秩序动荡期，熊市平均持续4.7年。中金黄金模型2.0显示当前金价存在明显高估，波动风险可能增大。",
+            "人口老龄化与城镇化放缓对地产回报的解释力有限：回归分析显示R²仅为0.04（老龄化）和统计不显著（城镇化）。日本经验表明，人口变量可以影响房地产周期，但难以单向决定其长期回报路径。相关学术文献也普遍不支持\"人口决定论\"。",
+            "股债之间存在明显的周期性轮动特征，中美数据均显示债券夏普率存在短周期脉冲式波动（中国1年滚动夏普-3至+3、美国近年接近零值甚至负值），这进一步支持了多资产动态配置而非单一资产押注的策略逻辑。",
+            "报告采用收益波动比替代传统夏普率作为长期资产比较的指标，因为在较早时期\"无风险资产\"的界定不成熟，使用JST数据库提供的安全利率计算夏普率会产生测量误差；同时对地产数据进行了审慎的波动率校正（假设观测波动仅反映真实波动的40%）。",
+            "报告的终极结论：大类资产中不存在可以长期信仰的\"圣杯\"，获取长期稳健回报的核心能力在于多资产配置——以权益承载增长、以债券平滑波动、以地产和商品及黄金对冲风险，并根据市场形势动态调整权重。当\"长期信仰\"不再可靠，资产配置成为获得长期回报的核心能力。",
+            "对中国投资者的特殊意义：商品能够提供一种相对稀缺的\"全球宏观暴露\"，在跨境配置渠道有限的条件下帮助组合映射海外需求变化、全球通胀脉冲以及国际供给冲击；A股高波动导致持有体验较差，但中美股市波动率差距近年已有所收敛。",
+            "当前全球宏观环境正处于货币秩序调整、地缘政治重构、全球产业链再配置以及美元信用体系动摇的阶段，传统资产定价框架正在经历再平衡，非美资产的相对重要性可能阶段性上升，存在部分非美股市在未来十年维度跑赢美股的可能性。"
+          ],
+          "original_summary": ""
+        }
+      ]
+    }
+  ]
+};
+
+// 当前筛选状态
+let currentFilter = 'all';
+let searchQuery = '';
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+  renderContent();
+});
+
+// 按日期筛选
+function filterByDate(date) {
+  currentFilter = date;
+  // 更新侧边栏高亮
+  document.querySelectorAll('.date-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.date === date);
+  });
+  renderContent();
+}
+
+// 搜索
+function handleSearch(query) {
+  searchQuery = query.trim().toLowerCase();
+  renderContent();
+}
+
+// 渲染内容
+function renderContent() {
+  const container = document.getElementById('contentArea');
+  let scans = HISTORY.scans || [];
+  
+  // 按日期筛选
+  if (currentFilter !== 'all') {
+    scans = scans.filter(s => s.scan_time && s.scan_time.startsWith(currentFilter));
+  }
+  
+  // 搜索过滤
+  if (searchQuery) {
+    scans = scans.map(s => {
+      const filteredSummaries = (s.summaries || []).filter(r => {
+        const searchText = [
+          r.filename, r.summary, r.original_language,
+          ...(r.key_points || []), r.original_summary
+        ].join(' ').toLowerCase();
+        return searchText.includes(searchQuery);
+      });
+      return {...s, summaries: filteredSummaries};
+    }).filter(s => s.summaries && s.summaries.length > 0);
+  }
+  
+  // 按时间倒序
+  scans.sort((a, b) => b.scan_time.localeCompare(a.scan_time));
+  
+  if (scans.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h3>${searchQuery ? '未找到匹配的研报' : '暂无扫描记录'}</h3>
+        <p>${searchQuery ? '尝试使用其他关键词搜索' : '将研报文件放入监控文件夹后，系统会自动扫描总结'}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // 按日期分组渲染
+  let html = '<div class="all-dates-view">';
+  
+  // 按日期分组
+  const grouped = {};
+  scans.forEach(s => {
+    try {
+      const dateKey = new Date(s.scan_time).toISOString().split('T')[0];
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(s);
+    } catch(e) {}
+  });
+  
+  const sortedDates = Object.keys(grouped).sort().reverse();
+  
+  for (const date of sortedDates) {
+    const dayScans = grouped[date];
+    const totalReports = dayScans.reduce((acc, s) => acc + (s.summaries || []).length, 0);
+    
+    // 日期标题
+    const dateDisplay = formatDate(date);
+    html += `<div class="date-section">`;
+    html += `<div class="date-section-title">${dateDisplay} <span class="date-count">${totalReports}份</span></div>`;
+    
+    for (const scan of dayScans) {
+      const scanTime = formatTime(scan.scan_time);
+      html += `<div class="date-header" style="margin-bottom:16px;">
+        <h2 style="font-size:16px;">第${scan.scan_sequence}次扫描</h2>
+        <span class="scan-info">${scanTime} | ${(scan.summaries||[]).length}份研报</span>
+      </div>`;
+      
+      for (const report of (scan.summaries || [])) {
+        html += renderReportCard(report);
+      }
+    }
+    
+    html += `</div>`;
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// 渲染单个研报卡片
+function renderReportCard(r) {
+  const isEn = r.is_english;
+  const lang = r.original_language || '未知';
+  const badgeClass = isEn ? 'badge-en' : (lang === '中文' ? 'badge-cn' : 'badge-other');
+  const badgeText = isEn ? '英文→中文翻译' : (lang === '中文' ? '中文' : lang);
+  
+  // 文件名去后缀
+  let displayName = r.filename || '未知文档';
+  const exts = ['.pdf','.txt','.md','.docx','.doc','.csv','.html','.htm','.json','.xml','.log'];
+  for (const ext of exts) {
+    if (displayName.toLowerCase().endsWith(ext)) {
+      displayName = displayName.slice(0, -ext.length);
+      break;
+    }
+  }
+  
+  let html = `
+  <div class="report-card">
+    <div class="card-header">
+      <h3>${escapeHtml(displayName)}</h3>
+      <span class="badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="card-meta">
+      <span>📄 ${escapeHtml(r.size || '未知')}</span>
+      <span>🌐 ${escapeHtml(lang)}</span>
+      ${isEn ? '<span>✅ 已翻译为中文</span>' : ''}
+    </div>
+    <div class="card-body">`;
+  
+  // 核心内容
+  if (r.summary) {
+    html += `
+    <div class="summary-box">
+      <div class="label">核心内容</div>
+      <div class="text">${escapeHtml(r.summary)}</div>
+    </div>`;
+  }
+  
+  // 核心要点
+  if (r.key_points && r.key_points.length > 0) {
+    html += `
+    <div class="points-box">
+      <div class="label">核心要点</div>`;
+    r.key_points.forEach((p, i) => {
+      html += `
+      <div class="point-item">
+        <span class="point-num">${i+1}</span>
+        <span>${escapeHtml(p)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  
+  // 英文原文
+  if (r.original_summary && isEn) {
+    html += `
+    <div class="original-box">
+      <div class="label">English Summary (Original)</div>
+      <div class="text">${escapeHtml(r.original_summary)}</div>
+    </div>`;
+  }
+  
+  html += `
+    </div>
+  </div>`;
+  
+  return html;
+}
+
+// 工具函数
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatDate(dateStr) {
+  try {
+    const d = new Date(dateStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    const weekdays = ['日','一','二','三','四','五','六'];
+    return `${year}年${month}月${day}日 星期${weekdays[d.getDay()]}`;
+  } catch(e) {
+    return dateStr;
+  }
+}
+
+function formatTime(isoStr) {
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+  } catch(e) {
+    return isoStr;
+  }
+}
+</script>
+</body>
+</html>
